@@ -6,15 +6,23 @@ Created on Jan 24, 2016
 import pandas as pd
 import time
 from Telstra.DataCollector.DataReader import DataReader as DataReader
+import os
+
 
 class DataProcessor(object):
     '''
     classdocs
     '''
+    _basePath =""
+    if os.name == 'nt':
+        _basePath = "D:\\Kaggle\\Telstra\\"
+    else:
+        _basePath = "/Users/whmou/Kaggle/Telstra/"
     
-    _eventTypePath = "/Users/whmou/Kaggle/Telstra/resource_type.csv"
-    _pathMain = "/Users/whmou/Kaggle/Telstra/test2.csv"
-    _outputPathName = "/Users/whmou/Kaggle/Telstra/test3.csv"
+    _typeName= "log_feature"
+    _eventTypePath = _basePath + _typeName + ".csv"
+    _pathMain = _basePath + "test5.csv"
+    _outputPathName = _basePath + "test6.csv"
 
     def __init__(self):
         '''
@@ -24,10 +32,10 @@ class DataProcessor(object):
     def sumExist(self):
         dr = DataReader()
         dr.readInCSV(self._pathMain, "test")
-        tmpColumnPrefix = "resource_type_"
+        tmpColumnPrefix = self._typeName + "_"
         df = pd.read_csv(self._eventTypePath, header=0, sep=',')
         processDf = dr._testDataFrame
-        for i in range (1,2):
+        for i in range (2,3):
             tmpColName = tmpColumnPrefix + str(i)
             processDf[tmpColName] = 0
         
@@ -38,10 +46,10 @@ class DataProcessor(object):
             for i2 in range(tmpLastI2, len(df[df.columns[0]] )):
                 tmpMainId = processDf[processDf.columns[0]][i1]
                 tmpId = df[df.columns[0]][i2]
-                tmpVal= df[df.columns[1]][i2]
+                tmpVal= df[df.columns[2]][i2]
                 if  tmpMainId == tmpId:
                     tmpFlag = True
-                    processDf[processDf.columns[2]][i1] +=1 
+                    processDf[processDf.columns[6]][i1] +=tmpVal 
                 if tmpFlag == True and tmpMainId != tmpId:
                     tmpLastI2 = i2
                     break
