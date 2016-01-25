@@ -18,7 +18,7 @@ class ModelFactory(object):
         '''
     
     def getRandomForestClf(self, X, Y):
-        clf = rf(n_estimators=100, max_depth=None, min_samples_split=1, random_state=0)
+        clf = rf(n_estimators=300, max_depth=None, min_samples_split=1, random_state=0)
         scores = cross_val_score(clf, X, Y)
         print "Random Forest Validation Precision: ", scores.mean() 
         clf.fit(X, Y)

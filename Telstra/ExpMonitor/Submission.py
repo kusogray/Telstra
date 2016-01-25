@@ -8,6 +8,7 @@ from Telstra.DataCollector.DataReader import DataReader as DataReader
 from Telstra.Curiosity.ExperimentPlayGround import exp
 import pandas as pd
 import csv
+import os
 
 _basePath =""
 if os.name == 'nt':
@@ -15,10 +16,10 @@ if os.name == 'nt':
 else:
     _basePath = "/Users/whmou/Kaggle/Telstra/"
 testPath = _basePath + "test6.csv"    
-testPath2 = _basePath + "test7.csv"   
+testPath2 = _basePath + "test9.csv"   
 
 samplePath = _basePath + "sample_submission.csv" 
-outputPath = _basePath+"temp_submission2.csv"
+outputPath = _basePath+"temp_submission3.csv"
 
 if __name__ == '__main__':
     dr = DataReader()
@@ -46,7 +47,7 @@ if __name__ == '__main__':
     
     
     ansDf = ansArr
-    for i1 in range(0, 1):
+    for i1 in range(0, len(sampleIdList)):
         tmpSampleId = sampleIdList[i1]
         for i2 in range (0,len(sampleIdList) ):
             
@@ -58,4 +59,6 @@ if __name__ == '__main__':
                 break
         print i1
     file.close()
+    
+    os.startfile('D:\\123.m4a')
     

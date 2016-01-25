@@ -14,9 +14,10 @@ def exp():
         _basePath = "D:\\Kaggle\\Telstra\\"
     else:
         _basePath = "/Users/whmou/Kaggle/Telstra/"
-        
-    path = _basePath + "train_merge7.csv"
-    testPath = _basePath + "test7.csv"
+    
+    doTestFlag = False
+    path = _basePath + "train_merge10.csv"
+    testPath = _basePath + "test9.csv"
     # 1. read data
     dr = DataReader()
     dr.readInCSV( path, "train")
@@ -26,8 +27,23 @@ def exp():
     #print dr._trainDataFrame.as_matrix
     fab = ModelFactory()
     rfClf = fab.getRandomForestClf(dr._trainDataFrame, dr._ansDataFrame)
-    print rfClf.predict_proba(dr._testDataFrame)
-    return rfClf.predict_proba(dr._testDataFrame)
+    
+    if doTestFlag == True:
+        print rfClf.predict_proba(dr._testDataFrame)
+    
+    
+    featureImportance =[]
+    for i in range(0,len(rfClf.feature_importances_)):
+        if i !=  len(dr._trainDataFrame.columns):  
+            if (dr._trainDataFrame.columns[i]).find("_one_hot") == -1:
+                featureImportance.append(  [dr._trainDataFrame.columns[i] , rfClf.feature_importances_[i]] )
+    
+    print featureImportance
+    featureImportance.sort(lambda x, y: cmp(x[1], y[1]), reverse=True)
+    print featureImportance 
+
+    if doTestFlag == True:       
+        return rfClf.predict_proba(dr._testDataFrame)
 
 if __name__ == '__main__':
     exp()
