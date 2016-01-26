@@ -19,10 +19,10 @@ class TestDataProcessor(object):
     else:
         _basePath = "/Users/whmou/Kaggle/Telstra/"
     
-    _typeName= "log_feature"
+    _typeName= "severity_type"
     _eventTypePath = _basePath + _typeName + ".csv"
-    _pathMain = _basePath + "test6.csv"
-    _outputPathName = _basePath + "test8.csv"
+    _pathMain = _basePath + "test8.csv"
+    _outputPathName = _basePath + "test10.csv"
     _mode = "test"
 
     def __init__(self):
@@ -40,7 +40,7 @@ class TestDataProcessor(object):
         else:
             processDf = dr._testDataFrame
             
-        for i in range (1,387):
+        for i in range (1,6):
             tmpColName = tmpColumnPrefix + "one_hot_" + str(i)
             processDf[tmpColName] = 0
         
@@ -52,10 +52,10 @@ class TestDataProcessor(object):
                 tmpMainId = processDf[processDf.columns[0]][i1]
                 tmpId = df[df.columns[0]][i2]
                 tmpVal= df[df.columns[1]][i2]
-                tmpVal2= df[df.columns[2]][i2]
+                #tmpVal2= df[df.columns[2]][i2]
                 if  tmpMainId == tmpId:
                     tmpFlag = True
-                    processDf[processDf.columns[tmpVal+6]][i1] +=tmpVal2
+                    processDf[processDf.columns[tmpVal+390]][i1] =1
                 if tmpFlag == True and tmpMainId != tmpId:
                     tmpLastI2 = i2
                     break

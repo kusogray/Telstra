@@ -15,13 +15,14 @@ if os.name == 'nt':
     _basePath = "D:\\Kaggle\\Telstra\\"
 else:
     _basePath = "/Users/whmou/Kaggle/Telstra/"
-testPath = _basePath + "test6.csv"    
-testPath2 = _basePath + "test9.csv"   
+testPath = _basePath + "test6.csv"    # take id list only
+testPath2 = _basePath + "test10.csv"   
 
 samplePath = _basePath + "sample_submission.csv" 
 outputPath = _basePath+"temp_submission3.csv"
 
 if __name__ == '__main__':
+    print "start to make submission version:", outputPath
     dr = DataReader()
     dr.readInCSV(testPath, "test")
     idList =  dr._testDataFrame[dr._testDataFrame.columns[0]]
