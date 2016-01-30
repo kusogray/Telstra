@@ -16,10 +16,10 @@ if os.name == 'nt':
 else:
     _basePath = "/Users/whmou/Kaggle/Telstra/"
 testPath = _basePath + "test6.csv"    # take id list only
-testPath2 = _basePath + "test10.csv"   
+testPath2 = _basePath + "test11.csv"   
 
 samplePath = _basePath + "sample_submission.csv" 
-outputPath = _basePath+"temp_submission3.csv"
+outputPath = _basePath+"temp_submission4.csv"
 
 if __name__ == '__main__':
     print "start to make submission version:", outputPath
@@ -47,19 +47,19 @@ if __name__ == '__main__':
    
     
     
-    ansDf = ansArr
-    for i1 in range(0, len(sampleIdList)):
-        tmpSampleId = sampleIdList[i1]
-        for i2 in range (0,len(sampleIdList) ):
-            
-            tmpId = ansDf[ansDf.columns[0]][i2]
-            if tmpSampleId == tmpId:
-                tmpOut = str(tmpId) + "," + str(ansDf[ansDf.columns[1]][i2]) + "," \
-                + str(ansDf[ansDf.columns[2]][i2]) + "," +  str(ansDf[ansDf.columns[3]][i2]) + "\n"
-                file.write(tmpOut)
-                break
-        print i1
-    file.close()
+#     ansDf = ansArr
+#     for i1 in range(0, len(sampleIdList)):
+#         tmpSampleId = sampleIdList[i1]
+#         for i2 in range (0,len(sampleIdList) ):
+#             
+#             tmpId = ansDf[ansDf.columns[0]][i2]
+#             if tmpSampleId == tmpId:
+#                 tmpOut = str(tmpId) + "," + str(ansDf[ansDf.columns[1]][i2]) + "," \
+#                 + str(ansDf[ansDf.columns[2]][i2]) + "," +  str(ansDf[ansDf.columns[3]][i2]) + "\n"
+#                 file.write(tmpOut)
+#                 break
+#         print i1
+#     file.close()
     
     os.startfile('D:\\123.m4a')
     

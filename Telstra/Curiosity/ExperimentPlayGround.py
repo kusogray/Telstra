@@ -6,6 +6,9 @@ Created on Jan 24, 2016
 
 from Telstra.DataCollector.DataReader import DataReader as DataReader
 from Telstra.DataAnalyzer.ModelFactory import ModelFactory as ModelFactory
+from sklearn.cross_validation import cross_val_score
+from sklearn.externals import joblib
+from Telstra.util.CustomLogger import info as log
 import os
 import xgboost as xgb
 import time  
@@ -20,6 +23,7 @@ def exp():
     doTestFlag = True
     path = _basePath + "train_merge10.csv"
     testPath = _basePath + "test10.csv"
+    xgbModelPath = _basePath +'xgb.model'
     # 1. read data
     dr = DataReader()
     dr.readInCSV( path, "train")
@@ -28,20 +32,28 @@ def exp():
     # 2. run models
     #print dr._trainDataFrame.as_matrix
     fab = ModelFactory()
-    #rfClf = fab.getRandomForestClf(dr._trainDataFrame, dr._ansDataFrame)
+    rfClf = fab.getRandomForestClf(dr._trainDataFrame, dr._ansDataFrame)
     
-    print "xgb start"
-    param = {'max_depth':2}
-    num_round = 2
-    gbm = xgb.XGBClassifier(max_depth=7, n_estimators=350, learning_rate=0.05, objective='multi:softprob').fit(dr._trainDataFrame,  dr._ansDataFrame)
-    testResult = gbm.predict_proba(dr._testDataFrame)
-    print testResult
-    #xgbCv = xgb.cv(param, xgb.DMatrix(dr._trainDataFrame, dr._ansDataFrame), num_round, nfold=5,
-    #   metrics={'error'}, seed = 0)
+    log( "xgb start")
+    param = {'max_depth':10,  'n_estimators':300 , 'num_class':3, 'learning_rate':0.05, 'objective':'multi:softprob'}
+    num_round = 5
+    #gbm = xgb.XGBClassifier(max_depth=10, n_estimators=300, learning_rate=0.05, objective='multi:softprob').fit(dr._trainDataFrame,  dr._ansDataFrame)
+    #testResult = gbm.predict_proba(dr._testDataFrame)
+    #print testResult
+    gbm = xgb.XGBClassifier(max_depth=10, n_estimators=300, learning_rate=0.05, objective='multi:softprob')
     
+    scores = cross_val_score(rfClf, dr._trainDataFrame,  dr._ansDataFrame, n_jobs = -1)
+    log( "xgboost Validation Precision: ", scores.mean() )
+    #xgbCv = xgb.cv(param, xgb.DMatrix(dr._trainDataFrame, dr._ansDataFrame),  num_round, nfold=5,metrics={'error'}, seed = 0)
+    #gbTrain = gbm.fit(dr._trainDataFrame,  dr._ansDataFrame)
+    #joblib.dump(gbTrain, xgbModelPath)
+    #clf = joblib.load( xgbModelPath )
+    #clf.predict_proba(dr._testDataFrame)
+    #xgb.save(gbm, xgbModelPath)
     #print xgbCv
-    print "xgb end"
+    #print "xgb end"
     
+    #gbm = joblib.load( xgbModelPath )
     finalClf = gbm
     
     if doTestFlag == True:
@@ -68,5 +80,6 @@ if __name__ == '__main__':
     
     end = time.time()
     elapsed = end - start
-    print "exp elapsed:", elapsed , "sec"
+    log( "exp elapsed:", elapsed , "sec")
+    os.startfile('D:\\123.m4a')
     

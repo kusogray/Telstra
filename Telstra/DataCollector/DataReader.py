@@ -5,7 +5,7 @@ Created on Jan 24, 2016
 '''
 
 import pandas as pd
-
+from Telstra.util.CustomLogger import info as log
 
 class DataReader(object):
     '''
@@ -20,6 +20,7 @@ class DataReader(object):
     def readInCSV(self, path, mode):
         # # 1. read csv data in
         df = pd.read_csv(path, header=0, sep=',')
+        log("loading csv: " + path)
         if mode.lower() == "train":
             self._ansDataFrame = df[df.columns[0]]
             self._trainDataFrame = df[df.columns[1:]]
