@@ -7,6 +7,7 @@ from sklearn.cross_validation import cross_val_score
 from sklearn.grid_search import RandomizedSearchCV
 
 from Telstra.util.CustomLogger import info as log
+from Telstra.util.CustomLogger import musicAlarm
 from sklearn.datasets import load_digits
 
 import numpy as np
@@ -31,8 +32,30 @@ class ModelFactory(object):
     _gridSearchFlag = False
     _n_iter_search = 3
     
+    _bestScoreDict = {}
+    _bestClf = {}   # available only when self._gridSearchFlag is True
+    _basicClf = {}  # when self._gridSearchFlag is True, basic = best  
+    
+    def __init__(self):
+        '''
+        Constructor
+        '''
+    
+    def getAllModels(self, X, Y):
+        
+        log("GetAllModels start with iteration numbers: " , self._n_iter_search)
+        start = time()
+        self._basicClf["Xgboost"] = self.getXgboostClf(X, Y)
+        self._basicClf["Random Forest"] = self.getRandomForestClf(X, Y)
+        self._basicClf["Extra Trees"] = self.getExtraTressClf(X, Y)
+        self._basicClf["K-NN"] = self.getKnnClf(X, Y)
+        self._basicClf["Logistic Regression"] = self.getLogisticRegressionClf(X, Y)
+        self._basicClf["Naive Bayes"] = self.getNaiveBayesClf(X, Y)
+        log("GetAllModels cost: " , time() - start , " sec")
+        log("GetAllModels end with iteration numbers: " , self._n_iter_search)
+
     # Utility function to report best scores
-    def report(self, grid_scores, n_top=3):
+    def report(self, grid_scores, clfName, n_top=3):
         top_scores = sorted(grid_scores, key=itemgetter(1), reverse=True)[:n_top]
         bestParameters = {}
         for i, score in enumerate(top_scores):
@@ -42,15 +65,12 @@ class ModelFactory(object):
                   np.std(score.cv_validation_scores)))
             log("Parameters: {0}".format(score.parameters))
             if i == 0:
-                bestParameters = score.parameters
+                self._bestScoreDict[clfName] = score.mean_validation_score
             print("")
         return bestParameters
     
     
-    def __init__(self):
-        '''
-        Constructor
-        '''
+    
         
     def doRandomSearch(self, clfName, clf, param_dist):
         start = time()
@@ -59,7 +79,8 @@ class ModelFactory(object):
         
         random_search.fit(X, Y)
         log(clfName + " randomized search cost: " , time() - start , " sec")
-        self.report(random_search.grid_scores_)
+        self.report(random_search.grid_scores_, clfName)
+        self._bestClf[clfName] = random_search.best_estimator_
         return random_search.best_estimator_
     
     # # 1. Random Forest
@@ -235,6 +256,7 @@ class ModelFactory(object):
         clf = clf.fit(X, Y)
         scores = cross_val_score(clf, X,  Y )
         log( clfName + " Cross Validation Precision: ", scores.mean() )
+        self._bestScoreDict[clfName] = scores.mean()
             
         return clf
     
@@ -246,8 +268,15 @@ if __name__ == '__main__':
     
     digits = load_digits()
     X, Y = digits.data, digits.target
-    clf = fab.getNaiveBayesClf(X, Y)
-
-    x= clf.predict_proba(X)
-    log( x)
+#     clf = fab.getNaiveBayesClf(X, Y)
+#     clf2 = fab.getKnnClf(X, Y)
+#     clf3 = fab.getRandomForestClf(X, Y)
+#     x= clf.predict_proba(X)
+#     log( x)
+#     #log(fab._bestScoreDict)
+#     #log(fab._bestClf)
+#     log( fab._bestClf['Random Forest'].predict_proba(X))
+    #fab.getAllModels(X, Y)
+    #log(fab._bestClf['Random Forest'].predict_proba(X))
     log("haha")      
+    musicAlarm()

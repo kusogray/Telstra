@@ -13,6 +13,8 @@ import smtplib
 # Import the email modules we'll need
 from email.mime.text import MIMEText
 
+def musicAlarm():
+    os.startfile('D:\\123.m4a')
 
 def info(*inputMsg):
     tmpStr=""
