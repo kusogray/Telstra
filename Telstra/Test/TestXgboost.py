@@ -10,4 +10,9 @@ from sklearn.preprocessing import LabelEncoder
 import numpy as np
 
 if __name__ == '__main__':
-    pass
+    a= {}
+    a['a'] = 1
+    a['b'] = 3
+    a['c'] = 2
+    
+    print sorted(a.items(), key=lambda x: x[1], reverse = True)[0].key 

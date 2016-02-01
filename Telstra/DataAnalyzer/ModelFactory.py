@@ -7,14 +7,19 @@ from sklearn.cross_validation import cross_val_score
 from sklearn.grid_search import RandomizedSearchCV
 
 from Telstra.util.CustomLogger import info as log
+from Telstra.util.CustomLogger import mail
 from Telstra.util.CustomLogger import musicAlarm
+from Telstra.util.ModelUtils import *
 from sklearn.datasets import load_digits
 
 import numpy as np
 from operator import itemgetter
-from time import time
+import time
 from scipy.stats import randint as sp_randint
 from scipy.stats import uniform as sp_randf
+from sklearn.externals import joblib
+import os
+
 #http://docs.scipy.org/doc/numpy/reference/routines.random.html
 
 from sklearn.ensemble import RandomForestClassifier as rf
@@ -30,7 +35,8 @@ class ModelFactory(object):
     '''
 
     _gridSearchFlag = False
-    _n_iter_search = 3
+    _n_iter_search = 1
+    _expInfo = "ExpInfo"
     
     _bestScoreDict = {}
     _bestClf = {}   # available only when self._gridSearchFlag is True
@@ -41,17 +47,20 @@ class ModelFactory(object):
         Constructor
         '''
     
+    
     def getAllModels(self, X, Y):
         
         log("GetAllModels start with iteration numbers: " , self._n_iter_search)
-        start = time()
+        start = time.time()
         self._basicClf["Xgboost"] = self.getXgboostClf(X, Y)
-        self._basicClf["Random Forest"] = self.getRandomForestClf(X, Y)
-        self._basicClf["Extra Trees"] = self.getExtraTressClf(X, Y)
-        self._basicClf["K-NN"] = self.getKnnClf(X, Y)
-        self._basicClf["Logistic Regression"] = self.getLogisticRegressionClf(X, Y)
-        self._basicClf["Naive Bayes"] = self.getNaiveBayesClf(X, Y)
-        log("GetAllModels cost: " , time() - start , " sec")
+        self._basicClf["Random_Forest"] = self.getRandomForestClf(X, Y)
+        self._basicClf["Extra_Trees"] = self.getExtraTressClf(X, Y)
+        self._basicClf["K_NN"] = self.getKnnClf(X, Y)
+        self._basicClf["Logistic_Regression"] = self.getLogisticRegressionClf(X, Y)
+        self._basicClf["Naive_Bayes"] = self.getNaiveBayesClf(X, Y)
+        log("GetAllModels cost: " , time.time() - start , " sec")
+        log(sorted(self._bestScoreDict.items(), key=lambda x: x[1] , reverse=True) )
+        mail(self._expInfo, sorted(self._bestScoreDict.items(), key=lambda x: x[1] , reverse=True) )
         log("GetAllModels end with iteration numbers: " , self._n_iter_search)
 
     # Utility function to report best scores
@@ -72,20 +81,21 @@ class ModelFactory(object):
     
     
         
-    def doRandomSearch(self, clfName, clf, param_dist):
-        start = time()
+    def doRandomSearch(self, clfName, clf, param_dist, X, Y):
+        start = time.time()
         random_search = RandomizedSearchCV(clf, param_distributions=param_dist,
                                n_iter=self._n_iter_search)
         
         random_search.fit(X, Y)
-        log(clfName + " randomized search cost: " , time() - start , " sec")
+        log(clfName + " randomized search cost: " , time.time() - start , " sec")
         self.report(random_search.grid_scores_, clfName)
         self._bestClf[clfName] = random_search.best_estimator_
+        dumpModel(random_search.best_estimator_, clfName, self._expInfo)
         return random_search.best_estimator_
     
     # # 1. Random Forest
     def getRandomForestClf(self, X, Y):
-        clfName = "Random Forest"
+        clfName = "Random_Forest"
         ## http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
         clf = rf(n_estimators=300, max_depth=None, min_samples_split=1, random_state=0)
         
@@ -94,7 +104,7 @@ class ModelFactory(object):
             
             param_dist = {
                           "max_depth": sp_randint(4, 8),
-                          "max_features": sp_randint(1, 11),
+                          "max_features": sp_randf(0,1),
                           "min_samples_split": sp_randint(1, 11),
                           "min_samples_leaf": sp_randint(1, 11),
                           "bootstrap": [True, True],
@@ -103,7 +113,7 @@ class ModelFactory(object):
                           "n_estimators" : sp_randint(100, 300),
                           }
             
-            clf = self.doRandomSearch(clfName, clf, param_dist)
+            clf = self.doRandomSearch(clfName, clf, param_dist, X, Y)
             
             
         return clf
@@ -137,13 +147,14 @@ class ModelFactory(object):
                           #"num_class": [len(set(Y)), len(set(Y))],
                           }
             
-            clf = self.doRandomSearch(clfName, clf, param_dist)
-            
+            clf = self.doRandomSearch(clfName, clf, param_dist, X, Y)
+        
+        #joblib.dump(clf, xgbModelPath)    
         return clf
 
     # # 3.Extra Trees
     def getExtraTressClf(self, X, Y):
-        clfName = "Extra Trees"
+        clfName = "Extra_Trees"
         
         ## http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html
         clf = ExtraTreesClassifier(
@@ -177,14 +188,14 @@ class ModelFactory(object):
                           "n_estimators" : sp_randint(100, 300),
                           }
             
-            clf = self.doRandomSearch(clfName, clf, param_dist)
+            clf = self.doRandomSearch(clfName, clf, param_dist, X, Y)
             
         return clf
     
     
     # # 4.KNN
     def getKnnClf(self, X, Y):
-        clfName = "K-NN"
+        clfName = "K_NN"
         
         ## http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html
         clf = KNeighborsClassifier(
@@ -208,13 +219,13 @@ class ModelFactory(object):
                           "algorithm": ['auto', 'auto'],
                           }
             
-            clf = self.doRandomSearch(clfName, clf, param_dist)
+            clf = self.doRandomSearch(clfName, clf, param_dist, X, Y)
             
         return clf
     
     # # 5.Logistic Regression
     def getLogisticRegressionClf(self, X, Y):
-        clfName = "Logistic Regression"
+        clfName = "Logistic_Regression"
         
         ## http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html
         clf = LogisticRegression(
@@ -243,13 +254,13 @@ class ModelFactory(object):
                           "solver": ['newton-cg', 'lbfgs', 'liblinear'],
                           }
             
-            clf = self.doRandomSearch(clfName, clf, param_dist)
+            clf = self.doRandomSearch(clfName, clf, param_dist, X, Y)
             
         return clf
     
     # # 6. Naive Bayes
     def getNaiveBayesClf(self, X, Y):
-        clfName = "Naive Bayes"
+        clfName = "Naive_Bayes"
         
         ## http://scikit-learn.org/stable/modules/naive_bayes.html#gaussian-naive-bayes
         clf = GaussianNB()
@@ -270,13 +281,16 @@ if __name__ == '__main__':
     X, Y = digits.data, digits.target
 #     clf = fab.getNaiveBayesClf(X, Y)
 #     clf2 = fab.getKnnClf(X, Y)
-#     clf3 = fab.getRandomForestClf(X, Y)
+    #clf3 = fab.getRandomForestClf(X, Y)
 #     x= clf.predict_proba(X)
 #     log( x)
-#     #log(fab._bestScoreDict)
+    #log(fab._bestScoreDict)
 #     #log(fab._bestClf)
 #     log( fab._bestClf['Random Forest'].predict_proba(X))
-    #fab.getAllModels(X, Y)
+    fab.getAllModels(X, Y)
+    #log(sorted(fab._bestScoreDict.items(), key=lambda x: x[1] , reverse=True) )
     #log(fab._bestClf['Random Forest'].predict_proba(X))
-    log("haha")      
-    musicAlarm()
+    #dumpModel(clf3, "Random_Forest", "ExpTest")
+    #log("haha")
+    #log(getDumpFilePath( "Random_Forest", "haha Tets"))      
+    #musicAlarm()
