@@ -9,10 +9,12 @@ from sklearn.grid_search import RandomizedSearchCV
 from Telstra.util.CustomLogger import info as log
 from Telstra.util.CustomLogger import mail
 from Telstra.util.CustomLogger import musicAlarm
+from Telstra.DataCollector.DataStratifier import stratifyData
 from Telstra.util.ModelUtils import *
 from sklearn.datasets import load_digits
 
 import numpy as np
+import pandas as pd
 from operator import itemgetter
 import time
 from scipy.stats import randint as sp_randint
@@ -41,6 +43,8 @@ class ModelFactory(object):
     _bestScoreDict = {}
     _bestClf = {}   # available only when self._gridSearchFlag is True
     _basicClf = {}  # when self._gridSearchFlag is True, basic = best  
+    _mvpClf = []
+    
     
     def __init__(self):
         '''
@@ -52,15 +56,21 @@ class ModelFactory(object):
         
         log("GetAllModels start with iteration numbers: " , self._n_iter_search)
         start = time.time()
+        
         self._basicClf["Xgboost"] = self.getXgboostClf(X, Y)
         self._basicClf["Random_Forest"] = self.getRandomForestClf(X, Y)
         self._basicClf["Extra_Trees"] = self.getExtraTressClf(X, Y)
         self._basicClf["K_NN"] = self.getKnnClf(X, Y)
         self._basicClf["Logistic_Regression"] = self.getLogisticRegressionClf(X, Y)
         self._basicClf["Naive_Bayes"] = self.getNaiveBayesClf(X, Y)
+        
+        
         log("GetAllModels cost: " , time.time() - start , " sec")
-        log(sorted(self._bestScoreDict.items(), key=lambda x: x[1] , reverse=True) )
+        log(sorted(self._bestScoreDict.items(), key=lambda x: x[1] , reverse=True))
         mail(self._expInfo, sorted(self._bestScoreDict.items(), key=lambda x: x[1] , reverse=True) )
+        bestScoreList = sorted(self._bestScoreDict.items(), key=lambda x: x[1] , reverse=True)
+        log("MVP clf is : ", bestScoreList[0][0])
+        self._mvpClf = self._bestClf[bestScoreList[0][0]]
         log("GetAllModels end with iteration numbers: " , self._n_iter_search)
 
     # Utility function to report best scores
@@ -86,6 +96,7 @@ class ModelFactory(object):
         random_search = RandomizedSearchCV(clf, param_distributions=param_dist,
                                n_iter=self._n_iter_search)
         
+
         random_search.fit(X, Y)
         log(clfName + " randomized search cost: " , time.time() - start , " sec")
         self.report(random_search.grid_scores_, clfName)
@@ -179,7 +190,7 @@ class ModelFactory(object):
             
             param_dist = {
                           "max_depth": sp_randint(4, 8),
-                          "max_features": sp_randint(1, 11),
+                          "max_features": sp_randf(0,1),
                           "min_samples_split": sp_randint(1, 11),
                           "min_samples_leaf": sp_randint(1, 11),
                           "bootstrap": [True, True],
@@ -272,13 +283,19 @@ class ModelFactory(object):
         return clf
     
 if __name__ == '__main__':
-    fab = ModelFactory()
-    fab._gridSearchFlag = True
+#     fab = ModelFactory()
+#     fab._gridSearchFlag = True
     
     #log (sp_randf)
     
+
+    
     digits = load_digits()
-    X, Y = digits.data, digits.target
+    X = digits.data
+    Y = digits.target
+    #X, Y =  pd.DataFrame([9,9,9,9,8,8,8,7,7,7,6,6]), pd.DataFrame([0,0,0,0,1,1,1,2,2,2,3,3])
+    #X, Y =  pd.DataFrame([1,2,3,4,5,6,7,8,9,10,11,12]), pd.DataFrame([1,2,3,4,5,6,7,8,9,10,11,12])
+    #newX, newY =  stratifyData(X,Y, 0.4)
 #     clf = fab.getNaiveBayesClf(X, Y)
 #     clf2 = fab.getKnnClf(X, Y)
     #clf3 = fab.getRandomForestClf(X, Y)
@@ -287,7 +304,20 @@ if __name__ == '__main__':
     #log(fab._bestScoreDict)
 #     #log(fab._bestClf)
 #     log( fab._bestClf['Random Forest'].predict_proba(X))
-    fab.getAllModels(X, Y)
+    #newX, newY = stratifyData(X, Y, 0.4)
+    newX, newY = X, Y
+    #print newX
+    fab = ModelFactory()
+    fab._gridSearchFlag = True
+    fab._n_iter_search = 1
+    fab._expInfo = "001_location_only" 
+    print newX
+    #print newY
+    fab.getAllModels(newX, newY)
+    #fab.getRandomForestClf(newX, newY)
+
+    bestClf = fab._mvpClf
+    log(bestClf.predict_proba(newX))
     #log(sorted(fab._bestScoreDict.items(), key=lambda x: x[1] , reverse=True) )
     #log(fab._bestClf['Random Forest'].predict_proba(X))
     #dumpModel(clf3, "Random_Forest", "ExpTest")
