@@ -6,6 +6,7 @@ Created on Jan 30, 2016
 
 import time
 import os
+import subprocess
 # Import smtplib for the actual sending function
 import smtplib
 
@@ -15,8 +16,11 @@ from email.mime.text import MIMEText
 from Telstra.Resources import Config
 
 def musicAlarm():
-    os.startfile(Config.musicAlarmPath)
-
+    if os.name == 'nt':
+        os.startfile(Config.musicAlarmPath)
+    else:
+        opener = "open"
+        subprocess.call([opener, Config.musicAlarmPath])
 def info(*inputMsg):
     tmpStr=""
     for tmp in inputMsg:
@@ -60,3 +64,4 @@ def mail(mailTitle, *inputMsg):
 
 if __name__ == '__main__':
     mail("Hoho New!!!", "DerDer!!")
+    musicAlarm()

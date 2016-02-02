@@ -16,7 +16,7 @@ from Telstra.util.CustomLogger import musicAlarm
 if __name__ == '__main__':
     
     # 1. read in data
-    expInfo = "location_only\\"
+    expInfo = "location_only" + Config.osSep
     _basePath = Config.FolderBasePath + expInfo
     
     
@@ -37,7 +37,7 @@ if __name__ == '__main__':
     # 3. get all best model from newX
     fab = ModelFactory()
     fab._gridSearchFlag = True
-    fab._n_iter_search = 30
+    fab._n_iter_search = 1
     fab._expInfo = "001_location_only" 
     fab.getAllModels(newX, newY)
     
