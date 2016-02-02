@@ -27,6 +27,13 @@ def dumpModel(clf, clfName, expInfo):
     log("Exp info: ",expInfo)
     joblib.dump(clf, tmpDumpPath)
     log("Dump ",clfName, " successfully")
+    
+
+def loadModel(modelPath):
+    
+    log("Start load model: ", modelPath)
+    clf = joblib.load( modelPath )
+    return clf
      
 
 if __name__ == '__main__':

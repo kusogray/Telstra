@@ -21,6 +21,7 @@ def musicAlarm():
     else:
         opener = "open"
         subprocess.call([opener, Config.musicAlarmPath])
+        
 def info(*inputMsg):
     tmpStr=""
     for tmp in inputMsg:
