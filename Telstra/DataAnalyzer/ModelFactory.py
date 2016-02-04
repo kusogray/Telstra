@@ -93,8 +93,11 @@ class ModelFactory(object):
         
     def doRandomSearch(self, clfName, clf, param_dist, X, Y):
         start = time.time()
+        multiCores = -1
+        if  clfName == "Logistic_Regression": 
+            multiCores = 1
         random_search = RandomizedSearchCV(clf, param_distributions=param_dist,
-                               n_iter=self._n_iter_search)
+                               n_iter=self._n_iter_search, n_jobs=multiCores)
         
 
         random_search.fit(X, Y)
@@ -262,7 +265,7 @@ class ModelFactory(object):
             param_dist = {
                           "penalty": ['l1', 'l2'],
                           "C": sp_randf(1.0,3.0),
-                          "solver": ['newton-cg', 'lbfgs', 'liblinear'],
+                          "solver": [ 'lbfgs', 'liblinear'],
                           }
             
             clf = self.doRandomSearch(clfName, clf, param_dist, X, Y)
