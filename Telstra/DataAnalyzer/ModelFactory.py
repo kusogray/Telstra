@@ -263,7 +263,7 @@ class ModelFactory(object):
             log(clfName + " start searching param...")
             
             param_dist = {
-                          "penalty": ['l1', 'l2'],
+                          "penalty": ['l2', 'l2'],
                           "C": sp_randf(1.0,3.0),
                           "solver": [ 'lbfgs', 'liblinear'],
                           }

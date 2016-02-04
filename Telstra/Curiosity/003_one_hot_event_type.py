@@ -18,13 +18,14 @@ import pandas as pd
 if __name__ == '__main__':
     
     # 1. read in data
-    expInfo = "003_one_hot_" + Config.osSep
-    _basePath = Config.FolderBasePath + expInfo
+    expNo = "003"
+    expInfo = expNo + "_one_hot_event_type" 
+    _basePath = Config.FolderBasePath + expInfo + Config.osSep
     
     
-    doTestFlag = True
-    path = _basePath + "002_train_tobe.csv"
-    testPath = _basePath + "002_test_tobe.csv"
+    doTestFlag = False
+    path = _basePath + expNo + "_train_tobe.csv"
+    testPath = _basePath + expNo + "_test_tobe.csv"
    
     # 1. read data
     dr = DataReader()
@@ -38,11 +39,11 @@ if __name__ == '__main__':
  
     
     # 3. get all best model from newX
-#     fab = ModelFactory()
-#     fab._gridSearchFlag = True
-#     fab._n_iter_search = 30
-#     fab._expInfo = "002_blending" 
-#     fab.getAllModels(newX, newY)
+    fab = ModelFactory()
+    fab._gridSearchFlag = True
+    fab._n_iter_search = 30
+    fab._expInfo = expInfo
+    fab.getAllModels(newX, newY)
     
     # 4. test all data, output 3 ans as features
     #D:\Kaggle\Telstra\002_blending\(Xgboost)_(2016-02-03_20_09_03).model
@@ -50,13 +51,13 @@ if __name__ == '__main__':
     #D:\Kaggle\Telstra\002_blending\(Extra_Trees)_(2016-02-03_20_21_58).model
     #D:\Kaggle\Telstra\002_blending\(K_NN)_(2016-02-03_20_32_22).model
     
-    modelPath = _basePath+"(K_NN)_(2016-02-03_20_32_22).model"
-    tmpOutPath = _basePath + "002_submission_1_K_NN.csv"
-    tmpClf = loadModel( modelPath)
-    log(tmpClf.predict_proba(newX))
-    outDf = pd.concat([newX, pd.DataFrame(tmpClf.predict_proba(newX))], axis=1)
-    outDf = pd.DataFrame(tmpClf.predict_proba(newX))
-    outDf.to_csv(tmpOutPath, sep=',', encoding='utf-8')
+#     modelPath = _basePath+"(K_NN)_(2016-02-03_20_32_22).model"
+#     tmpOutPath = _basePath + "002_submission_1_K_NN.csv"
+#     tmpClf = loadModel( modelPath)
+#     log(tmpClf.predict_proba(newX))
+#     outDf = pd.concat([newX, pd.DataFrame(tmpClf.predict_proba(newX))], axis=1)
+#     outDf = pd.DataFrame(tmpClf.predict_proba(newX))
+#     outDf.to_csv(tmpOutPath, sep=',', encoding='utf-8')
     musicAlarm()
     
     
