@@ -21,6 +21,6 @@ if os.name == 'nt':
     allTimeLogPath = "D:\\Kaggle\\Telstra\\log.txt"
 else: 
     FolderBasePath ='/Users/whmou/Kaggle/Telstra/'
-    musicAlarmPath = '/Users/whmou/123.m4a'
+    musicAlarmPath = '/Users/whmou/123.mp3'
     mailAccPath = "/Users/whmou/python_mail_setting.txt"
     allTimeLogPath = "/Users/whmou/Kaggle/Telstra/log.txt"
