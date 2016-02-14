@@ -41,6 +41,7 @@ class ModelFactory(object):
     _expInfo = "ExpInfo"
     _subFolderName =""
     _setXgboostTheradToOne = False
+    _onlyTreeBasedModels = False
     
     _bestScoreDict = {}
     _bestClf = {}   # available only when self._gridSearchFlag is True
@@ -62,9 +63,11 @@ class ModelFactory(object):
         self._basicClf["Xgboost"] = self.getXgboostClf(X, Y)
         self._basicClf["Random_Forest"] = self.getRandomForestClf(X, Y)
         self._basicClf["Extra_Trees"] = self.getExtraTressClf(X, Y)
-        self._basicClf["K_NN"] = self.getKnnClf(X, Y)
-        self._basicClf["Logistic_Regression"] = self.getLogisticRegressionClf(X, Y)
-        self._basicClf["Naive_Bayes"] = self.getNaiveBayesClf(X, Y)
+        
+        if not self._onlyTreeBasedModels:
+            self._basicClf["K_NN"] = self.getKnnClf(X, Y)
+            self._basicClf["Logistic_Regression"] = self.getLogisticRegressionClf(X, Y)
+            self._basicClf["Naive_Bayes"] = self.getNaiveBayesClf(X, Y)
         
         
         log("GetAllModels cost: " , time.time() - start , " sec")
@@ -121,9 +124,10 @@ class ModelFactory(object):
         
         if self._gridSearchFlag == True:
             log(clfName + " start searching param...")
-            
+            tmpLowDepth = int(len(X.columns) * 0.7)
+            tmpHighDepth = int(len(X.columns) )
             param_dist = {
-                          "max_depth": sp_randint(4, 8),
+                          "max_depth": sp_randint(tmpLowDepth, tmpHighDepth),
                           "max_features": sp_randf(0,1),
                           "min_samples_split": sp_randint(1, 11),
                           "min_samples_leaf": sp_randint(1, 11),
@@ -144,6 +148,8 @@ class ModelFactory(object):
         clfName = "Xgboost"
         
         ## https://github.com/dmlc/xgboost/blob/master/doc/parameter.md
+        tmpLowDepth = int(len(X.columns) * 0.7)
+        tmpHighDepth = int(len(X.columns) )
         objective =""
         if len(set(Y)) <=2:
             objective = "binary:logistic"
@@ -164,7 +170,7 @@ class ModelFactory(object):
                           #"objective": ['multi:softprob', 'multi:softprob'],
                           "learning_rate": sp_randf(0,1),
                           "gamma": sp_randint(0, 5),
-                          "max_depth": sp_randint(4, 10),
+                          "max_depth": sp_randint(tmpLowDepth, tmpHighDepth),
                           "min_child_weight": sp_randint(1, 5),
                           "max_delta_step": sp_randint(1, 10),
                           "subsample":sp_randf(0,1),
@@ -202,9 +208,11 @@ class ModelFactory(object):
         
         if self._gridSearchFlag == True:
             log(clfName + " start searching param...")
+            tmpLowDepth = int(len(X.columns) * 0.7)
+            tmpHighDepth = int(len(X.columns) )
             
             param_dist = {
-                          "max_depth": sp_randint(4, 8),
+                          "max_depth": sp_randint(tmpLowDepth, tmpHighDepth),
                           "max_features": sp_randf(0,1),
                           "min_samples_split": sp_randint(1, 11),
                           "min_samples_leaf": sp_randint(1, 11),

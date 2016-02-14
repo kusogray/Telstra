@@ -36,7 +36,7 @@ if __name__ == '__main__':
     
     
        
-    for i in range(1,33):
+    for i in range(1,32):
         log( "start " + str(i) + "/32 ...")
         tmpCurFeatureList = []
         
@@ -66,6 +66,7 @@ if __name__ == '__main__':
         fab = ModelFactory()
         fab._setXgboostTheradToOne = True
         fab._gridSearchFlag = True
+        fab._onlyTreeBasedModels = True
         fab._subFolderName = "one_hot_each_" + str(i)
         fab._n_iter_search = 30
         fab._expInfo = expInfo
