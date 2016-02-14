@@ -7,17 +7,16 @@ import pandas as pd
 import time
 from Telstra.DataCollector.DataReader import DataReader as DataReader
 import os
+from Telstra.Resources import Config
 
 
 class DataProcessor(object):
     '''
     classdocs
     '''
-    _basePath =""
-    if os.name == 'nt':
-        _basePath = "D:\\Kaggle\\Telstra\\"
-    else:
-        _basePath = "/Users/whmou/Kaggle/Telstra/"
+    expNo = "013"
+    expInfo = expNo + "_data_exploration" 
+    _basePath = Config.FolderBasePath + expInfo + Config.osSep
     
     _typeName= "localtion"
     _eventTypePath = _basePath + _typeName + ".csv"

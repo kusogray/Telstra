@@ -11,7 +11,7 @@ class DataReader(object):
     '''
     classdocs
     '''
-    _trainDataFrame, _testDataFream, _ansDataFrame = [],[],[]
+    _trainDataFrame, _testDataFrame, _ansDataFrame = [],[],[]
 
     def __init__(self, ):
         '''
@@ -27,3 +27,11 @@ class DataReader(object):
         else:
             self._testDataFrame = df
     
+    def cvtPathListToDfList(self, inputPath, mode):
+        self.readInCSV(inputPath, mode)
+        if mode.lower() == "train":
+            return self._trainDataFrame, self._ansDataFrame
+        else:
+            return self._testDataFrame
+        
+        

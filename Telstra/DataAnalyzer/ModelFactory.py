@@ -39,6 +39,8 @@ class ModelFactory(object):
     _gridSearchFlag = False
     _n_iter_search = 1
     _expInfo = "ExpInfo"
+    _subFolderName =""
+    _setXgboostTheradToOne = False
     
     _bestScoreDict = {}
     _bestClf = {}   # available only when self._gridSearchFlag is True
@@ -68,6 +70,7 @@ class ModelFactory(object):
         log("GetAllModels cost: " , time.time() - start , " sec")
         log(sorted(self._bestScoreDict.items(), key=lambda x: x[1] , reverse=True))
         mail(self._expInfo, sorted(self._bestScoreDict.items(), key=lambda x: x[1] , reverse=True) )
+        log(self._expInfo, sorted(self._bestScoreDict.items(), key=lambda x: x[1] , reverse=True) )
         bestScoreList = sorted(self._bestScoreDict.items(), key=lambda x: x[1] , reverse=True)
         log("MVP clf is : ", bestScoreList[0][0])
         self._mvpClf = self._bestClf[bestScoreList[0][0]]
@@ -96,6 +99,9 @@ class ModelFactory(object):
         multiCores = -1
         if  clfName == "Logistic_Regression": 
             multiCores = 1
+        if self._setXgboostTheradToOne == True and clfName =="Xgboost":
+            multiCores = 1
+            
         random_search = RandomizedSearchCV(clf, param_distributions=param_dist,
                                n_iter=self._n_iter_search, n_jobs=multiCores)
         
@@ -104,7 +110,7 @@ class ModelFactory(object):
         log(clfName + " randomized search cost: " , time.time() - start , " sec")
         self.report(random_search.grid_scores_, clfName)
         self._bestClf[clfName] = random_search.best_estimator_
-        dumpModel(random_search.best_estimator_, clfName, self._expInfo)
+        dumpModel(random_search.best_estimator_, clfName, self._expInfo, self._subFolderName)
         return random_search.best_estimator_
     
     # # 1. Random Forest
@@ -138,18 +144,24 @@ class ModelFactory(object):
         clfName = "Xgboost"
         
         ## https://github.com/dmlc/xgboost/blob/master/doc/parameter.md
+        objective =""
+        if len(set(Y)) <=2:
+            objective = "binary:logistic"
+        else:
+            objective = "multi:softprob"
         clf = xgb.XGBClassifier(
                                 nthread=4,
                                 max_depth=12,
                                 subsample=0.5,
-                                colsample_bytree=1.0, 
-                                objective='multi:softprob')
+                                #colsample_bytree=1.0, 
+                                #num_class=len(set(Y)),
+                                objective=objective)
         
         if self._gridSearchFlag == True:
             log(clfName + " start searching param...")
             
             param_dist = {
-                          "objective": ['multi:softprob', 'multi:softprob'],
+                          #"objective": ['multi:softprob', 'multi:softprob'],
                           "learning_rate": sp_randf(0,1),
                           "gamma": sp_randint(0, 5),
                           "max_depth": sp_randint(4, 10),
