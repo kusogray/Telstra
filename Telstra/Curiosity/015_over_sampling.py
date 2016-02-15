@@ -37,12 +37,14 @@ if __name__ == '__main__':
 #     drAns.readInCSV(ansPath, "train")
 #     newY = drAns._ansDataFrame
 
-    tmpPath = _basePath + "location_log_feature_train.csv"
+    tmpPath = _basePath + "location_log_feature_over_sampling.csv"
     dr = DataReader()
-    dr.readInCSV(tmpPath, "test")
+    dr.readInCSV(tmpPath, "train")
     newX = dr._trainDataFrame
     newY = dr._ansDataFrame
-    newX = pd.concat([newY, newX], axis =1)
+    
+    
+#     newX = pd.concat([newY, newX], axis =1)
 #     
 #     logFeaturePath = _basePath + "log_feature_train.csv"
 #     dr = DataReader()
@@ -80,15 +82,15 @@ if __name__ == '__main__':
     #
     #print len(newX)        
     # Get all best model from newX
-#     fab = ModelFactory()
-#     fab._setXgboostTheradToOne = True
-#     fab._gridSearchFlag = True
-#     fab._subFolderName = "location_log_feature_over_sampling"  
-#     fab._n_iter_search = 30
-#     fab._expInfo = expInfo
-# #         fab.getAllModels(newX, newY)
-#     fab.getRandomForestClf(newX, newY)
-#     fab.getXgboostClf(newX, newY)
+    fab = ModelFactory()
+    fab._setXgboostTheradToOne = True
+    fab._gridSearchFlag = True
+    fab._subFolderName = "location_log_feature_over_sampling"  
+    fab._n_iter_search = 30
+    fab._expInfo = expInfo
+#         fab.getAllModels(newX, newY)
+    fab.getRandomForestClf(newX, newY)
+    fab.getXgboostClf(newX, newY)
 #         fab.getXgboostClf(newX, newY)
 #    log ( i , "/32 done..." )
     
@@ -121,5 +123,5 @@ if __name__ == '__main__':
 #     outDf.to_csv(tmpOutPath, sep=',', encoding='utf-8')
         
     
-    #musicAlarm()
+#     musicAlarm()
 #     log("004 Done")
