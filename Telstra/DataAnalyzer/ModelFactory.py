@@ -42,6 +42,7 @@ class ModelFactory(object):
     _subFolderName =""
     _setXgboostTheradToOne = False
     _onlyTreeBasedModels = False
+    _singleModelMail = False
     
     _bestScoreDict = {}
     _bestLoglossDict = {}
@@ -90,16 +91,28 @@ class ModelFactory(object):
     def report(self, grid_scores, clfName, bestLogLoss, n_top=3):
         top_scores = sorted(grid_scores, key=itemgetter(1), reverse=True)[:n_top]
         bestParameters = {}
+        mailContent = ""
         for i, score in enumerate(top_scores):
+            
             log("Model with rank: {0}".format(i + 1))
             log("Mean validation score: {0:.3f} (std: {1:.3f})".format(
                   score.mean_validation_score,
                   np.std(score.cv_validation_scores)))
             log("Parameters: {0}".format(score.parameters))
+            
+            mailContent += str("Model with rank: {0}".format(i + 1) ,"\n")
+            mailContent += str("Mean validation score: {0:.3f} (std: {1:.3f})".format(
+                  score.mean_validation_score,
+                  np.std(score.cv_validation_scores)) ,"\n" )
+            mailContent += str("Parameters: {0}".format(score.parameters) ,"\n")
+                    
             if i == 0:
                 self._bestScoreDict[clfName] = score.mean_validation_score
+                mailContent += str("Best CV score: " , score.mean_validation_score ,"\n")
             log("")
-        log (clfName , " best logloss: ", bestLogLoss)
+        #log (clfName , " best logloss: ", bestLogLoss)
+        if (self._singleModelMail == True):
+            mail("Single Model Done: ", clfName , ", ", mailContent)
         return bestParameters
     
     
@@ -124,30 +137,28 @@ class ModelFactory(object):
         self.report(random_search.grid_scores_, clfName, self._bestLoglossDict[clfName])
         
         dumpModel(random_search.best_estimator_, clfName, self._expInfo, self._subFolderName)
+        
+            
         return random_search.best_estimator_
     
     # # 1. Random Forest
     def getRandomForestClf(self, X, Y):
         clfName = "Random_Forest"
         ## http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
-        clf = rf(n_estimators=300, max_depth=None, min_samples_split=1, random_state=0)
+        clf = rf(n_estimators=300, max_depth=None, min_samples_split=1, random_state=0, bootstrap=True, oob_score = True)
         
         if self._gridSearchFlag == True:
             log(clfName + " start searching param...")
-            tmpLowDepth = int(len(X.columns) * 0.7)
-            tmpHighDepth = int(len(X.columns) )
+            tmpLowDepth = 10
+            tmpHighDepth = 50
             
-            tmpLowDepth = int(5)
-            tmpHighDepth = int(30 )
             
             param_dist = {
                           "max_depth": sp_randint(tmpLowDepth, tmpHighDepth),
                           "max_features": sp_randf(0,1),
                           "min_samples_split": sp_randint(1, 11),
                           "min_samples_leaf": sp_randint(1, 11),
-                          "bootstrap": [True, True],
                           "criterion": ["gini", "entropy"], 
-                          "oob_score":[True, True],
                           "n_estimators" : sp_randint(100, 300),
                           }
             
@@ -162,15 +173,15 @@ class ModelFactory(object):
         clfName = "Xgboost"
         
         ## https://github.com/dmlc/xgboost/blob/master/doc/parameter.md
-        tmpLowDepth = int(len(X.columns) * 0.7)
-        tmpHighDepth = int(len(X.columns) )
+        tmpLowDepth = 10
+        tmpHighDepth = 50
         objective =""
         if len(set(Y)) <=2:
             objective = "binary:logistic"
         else:
             objective = "multi:softprob"
         clf = xgb.XGBClassifier(
-                                nthread=4,
+                                #nthread=4,
                                 max_depth=12,
                                 subsample=0.5,
                                 #colsample_bytree=1.0, 
@@ -182,15 +193,16 @@ class ModelFactory(object):
             
             param_dist = {
                           #"objective": ['multi:softprob', 'multi:softprob'],
-                          "learning_rate": sp_randf(0,1),
+                          "learning_rate": sp_randf(0.1,0.4),
                           "gamma": sp_randint(0, 5),
                           "max_depth": sp_randint(tmpLowDepth, tmpHighDepth),
                           "min_child_weight": sp_randint(1, 5),
                           "max_delta_step": sp_randint(1, 10),
-                          "subsample":sp_randf(0,1),
+                          "subsample":sp_randf(0.35,0.75),
+                          "n_estimators" : sp_randint(0, 5),
                           #"colsample_bytree " : sp_randf(0,1),
-                          #"num_boost_round": sp_randint(40, 80),
-                          #"num_class": [len(set(Y)), len(set(Y))],
+                          #"num_round": sp_randint(70, 100),
+                          "n_estimators" : sp_randint(100, 300),
                           }
             
             clf = self.doRandomSearch(clfName, clf, param_dist, X, Y)

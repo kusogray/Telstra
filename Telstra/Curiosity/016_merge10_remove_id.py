@@ -49,8 +49,9 @@ if __name__ == '__main__':
     fab = ModelFactory()
     #fab._setXgboostTheradToOne = True
     fab._gridSearchFlag = True
+    fab._singleModelMail = True
     fab._subFolderName = "removeId"  
-    fab._n_iter_search = 30
+    fab._n_iter_search = 1
     fab._expInfo = expInfo
 # #         fab.getAllModels(newX, newY)
     #fab.getRandomForestClf(newX, newY)
