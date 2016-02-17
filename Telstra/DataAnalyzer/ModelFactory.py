@@ -44,6 +44,7 @@ class ModelFactory(object):
     _onlyTreeBasedModels = False
     
     _bestScoreDict = {}
+    _bestLoglossDict = {}
     _bestClf = {}   # available only when self._gridSearchFlag is True
     _basicClf = {}  # when self._gridSearchFlag is True, basic = best  
     _mvpClf = []
@@ -79,8 +80,14 @@ class ModelFactory(object):
         self._mvpClf = self._bestClf[bestScoreList[0][0]]
         log("GetAllModels end with iteration numbers: " , self._n_iter_search)
 
+
+    def getLogloss(self, clf, X, Y):
+        inputDf = pd.DataFrame(clf.predict_proba(X))
+        #print inputDf
+        return calLogLoss(inputDf, Y)
+
     # Utility function to report best scores
-    def report(self, grid_scores, clfName, n_top=3):
+    def report(self, grid_scores, clfName, bestLogLoss, n_top=3):
         top_scores = sorted(grid_scores, key=itemgetter(1), reverse=True)[:n_top]
         bestParameters = {}
         for i, score in enumerate(top_scores):
@@ -91,7 +98,8 @@ class ModelFactory(object):
             log("Parameters: {0}".format(score.parameters))
             if i == 0:
                 self._bestScoreDict[clfName] = score.mean_validation_score
-            print("")
+            log("")
+        log (clfName , " best logloss: ", bestLogLoss)
         return bestParameters
     
     
@@ -106,13 +114,15 @@ class ModelFactory(object):
             multiCores = 1
             
         random_search = RandomizedSearchCV(clf, param_distributions=param_dist,
-                               n_iter=self._n_iter_search, n_jobs=multiCores)
+                               n_iter=self._n_iter_search, n_jobs=multiCores, scoring='log_loss')
         
-
+        
         random_search.fit(X, Y)
         log(clfName + " randomized search cost: " , time.time() - start , " sec")
-        self.report(random_search.grid_scores_, clfName)
         self._bestClf[clfName] = random_search.best_estimator_
+        self._bestLoglossDict[clfName] = self.getLogloss(self._bestClf[clfName], X, Y)
+        self.report(random_search.grid_scores_, clfName, self._bestLoglossDict[clfName])
+        
         dumpModel(random_search.best_estimator_, clfName, self._expInfo, self._subFolderName)
         return random_search.best_estimator_
     
@@ -126,6 +136,10 @@ class ModelFactory(object):
             log(clfName + " start searching param...")
             tmpLowDepth = int(len(X.columns) * 0.7)
             tmpHighDepth = int(len(X.columns) )
+            
+            tmpLowDepth = int(5)
+            tmpHighDepth = int(30 )
+            
             param_dist = {
                           "max_depth": sp_randint(tmpLowDepth, tmpHighDepth),
                           "max_features": sp_randf(0,1),
@@ -183,6 +197,7 @@ class ModelFactory(object):
         
         #joblib.dump(clf, xgbModelPath)    
         return clf
+
 
     # # 3.Extra Trees
     def getExtraTressClf(self, X, Y):

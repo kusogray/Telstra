@@ -19,6 +19,8 @@ import pandas as pd
 from Telstra.Bartender.Blender import Blender
 from test._mock_backport import inplace
 import random
+import scipy as sp
+import numpy as np
 
 
 if __name__ == '__main__':
@@ -37,91 +39,74 @@ if __name__ == '__main__':
 #     drAns.readInCSV(ansPath, "train")
 #     newY = drAns._ansDataFrame
 
-    tmpPath = _basePath + "location_log_feature_over_sampling.csv"
+    tmpPath = _basePath + "train_v1.csv"
     dr = DataReader()
     dr.readInCSV(tmpPath, "train")
     newX = dr._trainDataFrame
     newY = dr._ansDataFrame
     
-    
-#     newX = pd.concat([newY, newX], axis =1)
-#     
-#     logFeaturePath = _basePath + "log_feature_train.csv"
-#     dr = DataReader()
-#     dr.readInCSV(logFeaturePath, "test")
-#     newX = dr._testDataFrame
-    
-#     for i, tmpVal in enumerate (newY):
-#         if tmpVal == 1:
-#             ans1List.append(i)
-#         elif tmpVal ==2:
-#             ans2List.append(i)
+#     t = pd.get_dummies(newY)
+#     finalList = []
+#     for tmp in range(0,len(t)):
+#         tmpList =[]
+#         for i in range(0, len(t.ix[tmp])):
+#             tmpList.append( int( t.ix[tmp][i]))
+#         finalList.append(tmpList)
+#     print finalList
+    #exit()
      
-#     for i in range(0,2913):
-# #     for i in range(0,3):
-#         tmpIdx = ans1List[random.randint(0, len(ans1List)-1)]
-#         tmpAnsCol = pd.DataFrame()
-#         #tmpRow = pd.concat([tmpAnsCol, pd.DataFrame(newX.iloc()[tmpIdx])], axis =1)
-#         newX = newX.append(newX.iloc()[tmpIdx])
-#         newX[newX.columns[0]][len(newX)-1] = 1
-#         print i
-#      
-#     for i in range(0,4058):
-# #     for i in range(0,3):
-#         tmpIdx = ans2List[random.randint(0, len(ans2List)-1)]
-#         tmpAnsCol = pd.DataFrame()
-#         tmpAnsCol[0] = 2
-#         newX = newX.append(newX.iloc()[tmpIdx])
-#         newX[newX.columns[0]][len(newX)-1] = 2
-#         print i
-#      
-#     #print newX.iloc()[0]
-#     tmpOutPath = _basePath + "location_log_feature_over_sampling.csv"
-#     print len(newX)
-#     newX.to_csv(tmpOutPath, sep=',', encoding='utf-8')
-    #
+ 
     #print len(newX)        
     # Get all best model from newX
     fab = ModelFactory()
-    fab._setXgboostTheradToOne = True
+    fab._setXgboostTheradToOne = False
     fab._gridSearchFlag = True
-    fab._subFolderName = "location_log_feature_over_sampling"  
+    fab._subFolderName = "ismail3"  
     fab._n_iter_search = 1
     fab._expInfo = expInfo
-#         fab.getAllModels(newX, newY)
-    #fab.getRandomForestClf(newX, newY)
-    fab.getXgboostClf(newX, newY)
-#         fab.getXgboostClf(newX, newY)
-#    log ( i , "/32 done..." )
+  
+    #clf = fab.getXgboostClf(newX, newY)
+    clf = fab.getRandomForestClf(newX, newY)
+    #print fab.getLogloss(clf,newX,newY)
+
+
+    
+    def llfun(act, pred):
+        epsilon = 1e-15
+        pred = sp.maximum(epsilon, pred)
+        pred = sp.minimum(1-epsilon, pred)
+        ll = sum(act*sp.log(pred) )
+        ll = sum(ll)
+        ll = ll * -1.0/len(act)
+        return ll
     
     
-    
-   
-    
-    
-   # musicAlarm()
+    #musicAlarm()
     # Test all data
     modelList = ["Xgboost","Random_Forest","Extra_Trees", "K_NN", "Logistic_Regression"]
 #     featureList = ["event_type", "log_feature", "resource_type", "severity_type"]
     
-#     for tmpFeature in featureList:
-    modelFolder = _basePath + "models" + Config.osSep + "location_log_feature_over_sampling" + Config.osSep
+    #for tmpFeature in featureList:
+    modelFolder = _basePath + "models" + Config.osSep + "ismail2" + Config.osSep
 #     for tmpModel in modelList:  
 #         curModel = tmpModel
 #          
-#     testPath = _basePath + "location_log_feature_test2.csv"
+#     testPath = _basePath + "test_v1.csv"
 #     dr = DataReader()
 #     newX = dr.cvtPathListToDfList(testPath, "test")
-#     curModel = "Xgboost"
-#       
+#     curModel = "Random_Forest"
+#         
 #     modelPath =  modelFolder + str(getMatchNameModelPath(modelFolder, curModel))
-#     tmpOutPath = _basePath + expNo +"_" + curModel + "_test_ans.csv"
+#     tmpOutPath = _basePath + expNo +"_" + curModel + "_test_ismail.csv"
 #     tmpClf = loadModel( modelPath)
 #     log(tmpClf.predict_proba(newX))
-#     outDf = pd.concat([newX, pd.DataFrame(tmpClf.predict_proba(newX))], axis=1)
+#     #outDf = pd.concat([newX, pd.DataFrame(tmpClf.predict_proba(newX))], axis=1)
 #     outDf = pd.DataFrame(tmpClf.predict_proba(newX))
 #     outDf.to_csv(tmpOutPath, sep=',', encoding='utf-8')
-        
+    
+     
+    
+    #print llfun( finalList, tmpClf.predict_proba(newX))
     
 #     musicAlarm()
 #     log("004 Done")

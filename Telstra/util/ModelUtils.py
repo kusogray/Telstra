@@ -12,6 +12,7 @@ from Telstra.Resources import Config
 import os
 import time
 import fnmatch
+import math
 
 ## note that remove search contains subfolders
 def deleteModelFiles(findFolderPath):
@@ -57,6 +58,25 @@ def loadModel(modelPath):
     clf = joblib.load( modelPath )
     return clf
      
+     
+def calLogLoss(inputDf, _ansDf):
+        N = len(_ansDf)
+        
+        tmp = -1.0 / float(N)
+        
+        tmpSum = 0.0
+        #tmpLowProbIdList = []
+        for i in range(0, N):
+            tmpAns = _ansDf[i]
+            #print inputDf[inputDf.columns[tmpAns]][i]
+            #print math.log(inputDf[inputDf.columns[tmpAns]][i])
+            tmpVal = inputDf[inputDf.columns[tmpAns]][i]
+#             if tmpVal < lowProbThreshold:
+#                 tmpLowProbIdList.append(i)
+            if tmpVal >0:
+                tmpSum += math.log(inputDf[inputDf.columns[tmpAns]][i])
+
+        return  tmpSum* tmp     
 
 if __name__ == '__main__':
     #log(getDumpFilePath("test", "test", " "))
