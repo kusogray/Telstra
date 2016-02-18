@@ -12,15 +12,19 @@ from Telstra.util.CustomLogger import musicAlarm
 from Telstra.DataCollector.DataStratifier import stratifyData
 from Telstra.util.ModelUtils import *
 from sklearn.datasets import load_digits
+from Telstra.Resources import Config
 
 import numpy as np
 import pandas as pd
 from operator import itemgetter
+from random import randint
+import random
 import time
 from scipy.stats import randint as sp_randint
 from scipy.stats import uniform as sp_randf
 from sklearn.externals import joblib
 import os
+import sys
 
 #http://docs.scipy.org/doc/numpy/reference/routines.random.html
 
@@ -30,6 +34,7 @@ from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
+from Cython.Shadow import NULL
 
 class ModelFactory(object):
     '''
@@ -180,42 +185,76 @@ class ModelFactory(object):
         ## https://github.com/dmlc/xgboost/blob/master/doc/parameter.md
         tmpLowDepth = 10
         tmpHighDepth = 50
+        
+        num_round = 50
+        num_class = len(set(Y))
         objective =""
         if len(set(Y)) <=2:
             objective = "binary:logistic"
         else:
             objective = "multi:softprob"
-        clf = xgb.XGBClassifier(
-                                #nthread=4,
-                                max_depth=12,
-                                subsample=0.5,
-                                #colsample_bytree=1.0, 
-                                #num_class=len(set(Y)),
-                                objective=objective)
         
+        num_round = 1
+        param = {'bst:max_depth':12, 'bst:eta':0.1, 'silent':1, 'eval_metric':'mlogloss', 'num_class':num_class , 'objective':objective }
+        param['nthread'] = 4
+        plst = param.items()
+        
+        clf = None
         if self._gridSearchFlag == True:
             log(clfName + " start searching param...")
+            clf = self.doXgboostRandomSearch(X, Y, num_round)
             
-            param_dist = {
-                          #"objective": ['multi:softprob', 'multi:softprob'],
-                          "learning_rate": sp_randf(0.1,0.4),
-                          "gamma": sp_randint(0, 5),
-                          "max_depth": sp_randint(tmpLowDepth, tmpHighDepth),
-                          "min_child_weight": sp_randint(1, 5),
-                          "max_delta_step": sp_randint(1, 10),
-                          "subsample":sp_randf(0.35,0.75),
-                          "n_estimators" : sp_randint(0, 5),
-                          #"colsample_bytree " : sp_randf(0,1),
-                          #"num_round": sp_randint(70, 100),
-                          "n_estimators" : sp_randint(100, 300),
-                          }
-            
-            clf = self.doRandomSearch(clfName, clf, param_dist, X, Y)
-        
+        else:
+            dtrain = xgb.DMatrix(X , label=Y)
+            clf = xgb.train( plst, dtrain, num_round)
         #joblib.dump(clf, xgbModelPath)    
         return clf
+    
+    def doXgboostRandomSearch(self, X, Y, num_round):
+        
+        paramList = []
+        bestScore = sys.float_info.max
+        bestClf = None
+        
+        for i in range(0, self._n_iter_search):
+        
+            param = {}
+            param['nthread'] = 4
+            
+            param['eta'] = random.uniform(0.15, 0.45)
+            param['gamma'] = randint(0,3)
+            param['max_depth'] = randint(8,120)
+            param['min_child_weight'] = randint(1,3)
+            param['max_delta_step'] = randint(1,10)
+            #param['colsample_bytree'] = 4
+            param['subsample'] = random.uniform(0.45, 0.65)
+            plst = param.items()
+        
+            evalDataPercentage = 0.1
+            
+            sampleRows = np.random.choice(X.index, len(X)*evalDataPercentage) 
+            
+            sampleAnsDf = Y.ix[sampleRows]
+            dtest  = xgb.DMatrix( X.ix[sampleRows], label=sampleAnsDf)
+            dtrain  =  xgb.DMatrix( X.drop(sampleRows), label=Y.drop(sampleRows))
 
-
+            
+            bst = xgb.train(plst, dtrain, num_round)
+            tmpScore = calLogLoss(pd.DataFrame(bst.predict(dtest)), sampleAnsDf)
+            if  tmpScore < bestScore:
+                bestScore = tmpScore
+                bestClf = bst
+                paramList = plst
+        
+        self.genXgboostRpt()
+        return bestClf
+        
+    def genXgboostRpt(self, bestClf, bestScore, paramList):
+        dumpModel(bestClf, "Xgboost", self._expInfo, self._subFolderName)
+        log("Native Xgboost best score : ", bestScore, ", param list: ", paramList)
+        if self._singleModelMail == True:
+            mail("Xgboost Done" ,"Native Xgboost best score : " + str( bestScore) + ", param list: " + str( paramList))
+        
     # # 3.Extra Trees
     def getExtraTressClf(self, X, Y):
         clfName = "Extra_Trees"

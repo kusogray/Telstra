@@ -12,6 +12,9 @@ class DataReader(object):
     classdocs
     '''
     _trainDataFrame, _testDataFrame, _ansDataFrame = [],[],[]
+    
+    _trainSampleDf, _trainEvalSampleDf = [], []
+    _ansSampleDf, _ansEvalSampleDf = [], []
 
     def __init__(self, ):
         '''

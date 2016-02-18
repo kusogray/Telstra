@@ -13,6 +13,7 @@ import os
 import time
 import fnmatch
 import math
+import shutil
 
 ## note that remove search contains subfolders
 def deleteModelFiles(findFolderPath):
@@ -57,7 +58,11 @@ def loadModel(modelPath):
     log("Start load model: ", modelPath)
     clf = joblib.load( modelPath )
     return clf
-     
+
+
+def moveFileToPath(srcFile, destPath):
+    shutil.move(srcFile, destPath)
+
      
 def calLogLoss(inputDf, _ansDf):
         N = len(_ansDf)
@@ -66,6 +71,7 @@ def calLogLoss(inputDf, _ansDf):
         
         tmpSum = 0.0
         #tmpLowProbIdList = []
+        print _ansDf
         for i in range(0, N):
             tmpAns = _ansDf[i]
             #print inputDf[inputDf.columns[tmpAns]][i]
@@ -80,6 +86,8 @@ def calLogLoss(inputDf, _ansDf):
 
 if __name__ == '__main__':
     #log(getDumpFilePath("test", "test", " "))
-    getMatchNameModelPath("/Users/whmou/Kaggle/Telstra/010_stack_each_feature/models/log_feature", "Xgboost")
-    deleteModelFiles("/Users/whmou/Kaggle/Telstra/011_remove_one_hot/models/")
+    #getMatchNameModelPath("/Users/whmou/Kaggle/Telstra/010_stack_each_feature/models/log_feature", "Xgboost")
+    #deleteModelFiles("/Users/whmou/Kaggle/Telstra/011_remove_one_hot/models/")
+    
+    moveFileToPath("F:\\test.model", "D:\\")
             
