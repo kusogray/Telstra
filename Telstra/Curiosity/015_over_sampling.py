@@ -37,7 +37,7 @@ if __name__ == '__main__':
 #     drAns.readInCSV(ansPath, "train")
 #     newY = drAns._ansDataFrame
 
-    tmpPath = _basePath + "location_log_feature_over_sampling.csv"
+    tmpPath = _basePath + "train_v1.csv"
     dr = DataReader()
     dr.readInCSV(tmpPath, "train")
     newX = dr._trainDataFrame
@@ -85,8 +85,9 @@ if __name__ == '__main__':
     fab = ModelFactory()
     fab._setXgboostTheradToOne = True
     fab._gridSearchFlag = True
-    fab._subFolderName = "location_log_feature_over_sampling"  
-    fab._n_iter_search = 1
+    fab._singleModelMail = True
+    fab._subFolderName = "ismail4"  
+    fab._n_iter_search = 10
     fab._expInfo = expInfo
 #         fab.getAllModels(newX, newY)
     #fab.getRandomForestClf(newX, newY)
@@ -105,23 +106,22 @@ if __name__ == '__main__':
 #     featureList = ["event_type", "log_feature", "resource_type", "severity_type"]
     
 #     for tmpFeature in featureList:
-    modelFolder = _basePath + "models" + Config.osSep + "location_log_feature_over_sampling" + Config.osSep
+    modelFolder = _basePath + "models" + Config.osSep + "ismail4" + Config.osSep
 #     for tmpModel in modelList:  
 #         curModel = tmpModel
 #          
-#     testPath = _basePath + "location_log_feature_test2.csv"
-#     dr = DataReader()
-#     newX = dr.cvtPathListToDfList(testPath, "test")
-#     curModel = "Xgboost"
-#       
-#     modelPath =  modelFolder + str(getMatchNameModelPath(modelFolder, curModel))
-#     tmpOutPath = _basePath + expNo +"_" + curModel + "_test_ans.csv"
-#     tmpClf = loadModel( modelPath)
-#     log(tmpClf.predict_proba(newX))
-#     outDf = pd.concat([newX, pd.DataFrame(tmpClf.predict_proba(newX))], axis=1)
-#     outDf = pd.DataFrame(tmpClf.predict_proba(newX))
-#     outDf.to_csv(tmpOutPath, sep=',', encoding='utf-8')
+    testPath = _basePath + "test_v1.csv"
+    dr = DataReader()
+    newX = dr.cvtPathListToDfList(testPath, "test")
+    curModel = "Xgboost"
+       
+    modelPath =  modelFolder + str(getMatchNameModelPath(modelFolder, curModel))
+    tmpOutPath = _basePath + expNo +"_" + curModel + "_test_ismail_ans.csv"
+    tmpClf = loadModel( modelPath)
+    log(tmpClf.predict_proba(newX))
+    outDf = pd.DataFrame(tmpClf.predict_proba(newX))
+    outDf.to_csv(tmpOutPath, sep=',', encoding='utf-8')
         
     
-#     musicAlarm()
+    musicAlarm()
 #     log("004 Done")
