@@ -46,18 +46,18 @@ if __name__ == '__main__':
 
     
     # Get all best model from newX
-    fab = ModelFactory()
-    #fab._setXgboostTheradToOne = True
-    fab._gridSearchFlag = True
-    fab._singleModelMail = True
-    fab._subFolderName = "removeId"  
-    fab._n_iter_search = 1
-    fab._expInfo = expInfo
-# #         fab.getAllModels(newX, newY)
-    #fab.getRandomForestClf(newX, newY)
-    fab.getXgboostClf(newX, newY)
-#         fab.getXgboostClf(newX, newY)
-#    log ( i , "/32 done..." )
+#     fab = ModelFactory()
+#     #fab._setXgboostTheradToOne = True
+#     fab._gridSearchFlag = True
+#     fab._singleModelMail = True
+#     fab._subFolderName = "removeId"  
+#     fab._n_iter_search = 5
+#     fab._expInfo = expInfo
+# # #         fab.getAllModels(newX, newY)
+#     #fab.getRandomForestClf(newX, newY)
+#     fab.getXgboostClf(newX, newY)
+# #         fab.getXgboostClf(newX, newY)
+# #    log ( i , "/32 done..." )
     
     
     
@@ -70,22 +70,21 @@ if __name__ == '__main__':
 #     featureList = ["event_type", "log_feature", "resource_type", "severity_type"]
     
 #     for tmpFeature in featureList:
-    modelFolder = _basePath + "models" + Config.osSep + "location_log_feature_over_sampling" + Config.osSep
+    modelFolder = _basePath + "models" + Config.osSep + "removeId" + Config.osSep
 #     for tmpModel in modelList:  
 #         curModel = tmpModel
 #          
-#     testPath = _basePath + "location_log_feature_test3.csv"
-#     dr = DataReader()
-#     newX = dr.cvtPathListToDfList(testPath, "test")
-#     curModel = "Random_Forest"
-#        
-#     modelPath =  modelFolder + str(getMatchNameModelPath(modelFolder, curModel))
-#     tmpOutPath = _basePath + expNo +"_" + curModel + "_test_ans.csv"
-#     tmpClf = loadModel( modelPath)
-#     log(tmpClf.predict_proba(newX))
-#     outDf = pd.concat([newX, pd.DataFrame(tmpClf.predict_proba(newX))], axis=1)
-#     outDf = pd.DataFrame(tmpClf.predict_proba(newX))
-#     outDf.to_csv(tmpOutPath, sep=',', encoding='utf-8')
+    testPath = _basePath + "016_test_tobe.csv"
+    dr = DataReader()
+    newX = dr.cvtPathListToDfList(testPath, "test")
+    curModel = "Xgboost"
+        
+    modelPath =  modelFolder + str(getMatchNameModelPath(modelFolder, curModel))
+    tmpOutPath = _basePath + expNo +"_" + curModel + "_test_ans.csv"
+    tmpClf = loadModel( modelPath)
+    log(tmpClf.predict_proba(newX))
+    outDf = pd.DataFrame(tmpClf.predict_proba(newX))
+    outDf.to_csv(tmpOutPath, sep=',', encoding='utf-8')
 #         
     
     #musicAlarm()
