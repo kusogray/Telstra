@@ -100,20 +100,15 @@ class ModelFactory(object):
                   np.std(score.cv_validation_scores)))
             log("Parameters: {0}".format(score.parameters))
             
-            mailContent += str("Model with rank: {0}".format(i + 1)  )
-            mailContent += "\n"
+            mailContent += str("Model with rank: {0}".format(i + 1) ,"\n")
             mailContent += str("Mean validation score: {0:.3f} (std: {1:.3f})".format(
                   score.mean_validation_score,
-                  np.std(score.cv_validation_scores))   )
-            mailContent += "\n"
-            mailContent += str("Parameters: {0}".format(score.parameters)  )
-            mailContent += "\n"
+                  np.std(score.cv_validation_scores)) ,"\n" )
+            mailContent += str("Parameters: {0}".format(score.parameters) ,"\n")
                     
             if i == 0:
                 self._bestScoreDict[clfName] = score.mean_validation_score
-                mailContent += str("Best CV score: ") + str ( score.mean_validation_score )
-                mailContent += "\n"
-                
+                mailContent += str("Best CV score: " , score.mean_validation_score ,"\n")
             log("")
         #log (clfName , " best logloss: ", bestLogLoss)
         if (self._singleModelMail == True):
