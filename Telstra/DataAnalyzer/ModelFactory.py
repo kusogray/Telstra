@@ -186,7 +186,6 @@ class ModelFactory(object):
         tmpLowDepth = 10
         tmpHighDepth = 50
         
-        num_round = 50
         num_class = len(set(Y))
         objective =""
         if len(set(Y)) <=2:
@@ -194,8 +193,20 @@ class ModelFactory(object):
         else:
             objective = "multi:softprob"
         
-        num_round = 1
-        param = {'bst:max_depth':12, 'bst:eta':0.1, 'silent':1, 'eval_metric':'mlogloss', 'num_class':num_class , 'objective':objective }
+        num_round = 300
+        param = {'bst:max_depth':18, 
+                 'bst:eta':0.05, 
+                 'silent':1, 
+                 #'min_child_weight':3, 
+                 'subsample': 0.7,
+                 'colsample_bytree': 0.7,
+                #  'max_delta_step':7,
+                   'gamma' : 2,
+                    'eval_metric':'mlogloss',
+                     'num_class':num_class ,
+                      'objective':objective,
+                      'alpha': 1,
+                      'lambda': 1 }
         param['nthread'] = 4
         plst = param.items()
         
@@ -216,8 +227,15 @@ class ModelFactory(object):
         bestScore = sys.float_info.max
         bestClf = None
         
-        for i in range(0, self._n_iter_search):
+        num_class = len(set(Y))
+        objective =""
+        if len(set(Y)) <=2:
+            objective = "binary:logistic"
+        else:
+            objective = "multi:softprob"
         
+        for i in range(0, self._n_iter_search):
+            log("xgboost start random search : " + str(i+1) + "/"+ str(self._n_iter_search))
             param = {}
             param['nthread'] = 4
             
@@ -225,10 +243,15 @@ class ModelFactory(object):
             param['gamma'] = randint(0,3)
             param['max_depth'] = randint(8,120)
             param['min_child_weight'] = randint(1,3)
+            param['eval_metric'] = 'mlogloss'
             param['max_delta_step'] = randint(1,10)
-            #param['colsample_bytree'] = 4
+            param['objective'] = objective
             param['subsample'] = random.uniform(0.45, 0.65)
+            param['num_class'] = num_class 
+            param['silent'] = 1
+            
             plst = param.items()
+        
         
             evalDataPercentage = 0.1
             
@@ -246,7 +269,7 @@ class ModelFactory(object):
                 bestClf = bst
                 paramList = plst
         
-        self.genXgboostRpt()
+        self.genXgboostRpt(bestClf, bestScore, paramList)
         return bestClf
         
     def genXgboostRpt(self, bestClf, bestScore, paramList):

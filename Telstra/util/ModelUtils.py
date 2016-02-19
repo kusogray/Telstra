@@ -71,16 +71,12 @@ def calLogLoss(inputDf, _ansDf):
         
         tmpSum = 0.0
         #tmpLowProbIdList = []
-        print _ansDf
+        _ansDf = _ansDf.tolist()
         for i in range(0, N):
             tmpAns = _ansDf[i]
-            #print inputDf[inputDf.columns[tmpAns]][i]
-            #print math.log(inputDf[inputDf.columns[tmpAns]][i])
             tmpVal = inputDf[inputDf.columns[tmpAns]][i]
-#             if tmpVal < lowProbThreshold:
-#                 tmpLowProbIdList.append(i)
             if tmpVal >0:
-                tmpSum += math.log(inputDf[inputDf.columns[tmpAns]][i])
+                tmpSum += math.log(tmpVal)
 
         return  tmpSum* tmp     
 

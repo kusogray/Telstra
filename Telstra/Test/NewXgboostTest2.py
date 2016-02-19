@@ -46,7 +46,7 @@ if __name__ == '__main__':
 #     drAns.readInCSV(ansPath, "train")
 #     newY = drAns._ansDataFrame
 
-    tmpPath = _basePath + "train_v1.csv"
+    tmpPath = _basePath + "train_2.csv"
     dr = DataReader()
     dr.readInCSV(tmpPath, "train")
     newX = dr._trainDataFrame
@@ -57,13 +57,28 @@ if __name__ == '__main__':
     
  
     fab = ModelFactory()
-    fab._setXgboostTheradToOne = True
+    #fab._setXgboostTheradToOne = True
     fab._gridSearchFlag = True
     fab._singleModelMail = True
-    fab._subFolderName = "testXgboost"  
-    fab._n_iter_search = 1
+    fab._subFolderName = "testXgboost6"  
+    fab._n_iter_search = 150
     fab._expInfo = expInfo
-    fab.getXgboostClf(newX, newY)
+    clf = fab.getXgboostClf(newX, newY)
+    
+    tmpPath = _basePath + "test_2.csv"
+    dr = DataReader()
+    dr.readInCSV(tmpPath, "test")
+    newX = dr._testDataFrame
+    newY = dr._ansDataFrame
+    newX  = xgb.DMatrix(newX)
+    #print clf.predict(newX)
+    tmpOutPath = _basePath + expNo +"_" + "Xgboost" + "_testXgboost6_ans.csv"
+    log(clf.predict(newX))
+    outDf = pd.DataFrame(clf.predict(newX))
+    outDf.to_csv(tmpOutPath, sep=',', encoding='utf-8')
+    musicAlarm()
+    
+        
 #     sampleRows = np.random.choice(X.index, len(X)*evalDataPercentage) 
 #     
 #     print  X.ix[sampleRows]
