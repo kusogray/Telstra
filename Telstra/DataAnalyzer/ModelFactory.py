@@ -193,7 +193,7 @@ class ModelFactory(object):
         else:
             objective = "multi:softprob"
         
-        num_round = 150
+        num_round = 120
         param = {'bst:max_depth':74, 
                  'bst:eta':0.05, 
                  'silent':1, 
@@ -274,13 +274,17 @@ class ModelFactory(object):
             sampleAnsDf = Y.ix[sampleRows]
             ori_X = X
             ori_Y = Y
-            dtest  = xgb.DMatrix( X.ix[sampleRows], label=sampleAnsDf)
-            dtrain  =  xgb.DMatrix( X.drop(sampleRows), label=Y.drop(sampleRows))
-            evallist  = [(dtest,'eval'), (dtrain,'train')]
-            bst = xgb.train(plst, dtrain, num_round, evallist)
-            new_num_round, minScore = self.getBestXgboostEvalScore(bst.bst_eval_set_score_list)
+            #dtest  = xgb.DMatrix( X.ix[sampleRows], label=sampleAnsDf)
+            #dtrain  =  xgb.DMatrix( X.drop(sampleRows), label=Y.drop(sampleRows))
+            #evallist  = [(dtest,'eval'), (dtrain,'train')]
             
-
+            dtrain  =  xgb.DMatrix( X, label=Y)
+            
+            xgbCvResult =  xgb.cv(plst, dtrain, num_boost_round= num_round,  nfold=5)
+            scoreList = xgbCvResult[xgbCvResult.columns[0]].tolist()
+            new_num_round = scoreList.index(min(scoreList)) + 1 
+            minScore = scoreList[new_num_round-1]
+            
             tmpScore = minScore
             if  tmpScore < bestScore:
                 #tmpSelfScore = calLogLoss(pd.DataFrame(bst.predict(dtest)), sampleAnsDf)
