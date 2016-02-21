@@ -277,18 +277,19 @@ class ModelFactory(object):
             evallist  = [(dtest,'eval'), (dtrain,'train')]
             bst = xgb.train(plst, dtrain, num_round, evallist)
             new_num_round, minScore = self.getBestXgboostEvalScore(bst.bst_eval_set_score_list)
-            bst = xgb.train(plst, dtrain, new_num_round, evallist)
             
-            tmpSelfScore = calLogLoss(pd.DataFrame(bst.predict(dtest)), sampleAnsDf)
-            print "self best score:" + str(tmpSelfScore)
-            print "xgb best score:" + str(minScore)
-            
-            
+
             tmpScore = minScore
             if  tmpScore < bestScore:
+                #tmpSelfScore = calLogLoss(pd.DataFrame(bst.predict(dtest)), sampleAnsDf)
+                #print "self best score:" + str(tmpSelfScore)
+                log( "xgb best score:" + str(minScore))
+                log("xgb best num_round: " + str(new_num_round))
+                bst = xgb.train(plst, dtrain, new_num_round, evallist)
                 bestScore = tmpScore
                 bestClf = bst
                 paramList = plst
+                joblib.dump(bst, Config.xgboostBestTmpCflPath)
         
         self.genXgboostRpt(bestClf, bestScore, paramList)
         return bestClf

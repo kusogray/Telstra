@@ -61,7 +61,7 @@ if __name__ == '__main__':
     fab._gridSearchFlag = True
     fab._singleModelMail = True
     fab._subFolderName = "testXgboost7"  
-    fab._n_iter_search = 5
+    fab._n_iter_search = 1
     fab._expInfo = expInfo
     clf = fab.getXgboostClf(newX, newY)
 #     
