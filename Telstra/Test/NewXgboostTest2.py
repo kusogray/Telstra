@@ -60,11 +60,11 @@ if __name__ == '__main__':
     #fab._setXgboostTheradToOne = True
     fab._gridSearchFlag = True
     fab._singleModelMail = True
-    fab._subFolderName = "testXgboost6"  
-    fab._n_iter_search = 150
+    fab._subFolderName = "testXgboost8"  
+    fab._n_iter_search = 1
     fab._expInfo = expInfo
     clf = fab.getXgboostClf(newX, newY)
-    
+#     
     tmpPath = _basePath + "test_2.csv"
     dr = DataReader()
     dr.readInCSV(tmpPath, "test")
@@ -72,7 +72,7 @@ if __name__ == '__main__':
     newY = dr._ansDataFrame
     newX  = xgb.DMatrix(newX)
     #print clf.predict(newX)
-    tmpOutPath = _basePath + expNo +"_" + "Xgboost" + "_testXgboost6_ans.csv"
+    tmpOutPath = _basePath + expNo +"_" + "Xgboost" + "_testXgboost8_ans.csv"
     log(clf.predict(newX))
     outDf = pd.DataFrame(clf.predict(newX))
     outDf.to_csv(tmpOutPath, sep=',', encoding='utf-8')

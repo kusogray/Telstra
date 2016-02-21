@@ -193,7 +193,7 @@ class ModelFactory(object):
         else:
             objective = "multi:softprob"
         
-        num_round = 300
+        num_round = 20
         param = {'bst:max_depth':18, 
                  'bst:eta':0.05, 
                  'silent':1, 
@@ -214,13 +214,24 @@ class ModelFactory(object):
         if self._gridSearchFlag == True:
             log(clfName + " start searching param...")
             clf = self.doXgboostRandomSearch(X, Y, num_round)
-            
+
         else:
             dtrain = xgb.DMatrix(X , label=Y)
             clf = xgb.train( plst, dtrain, num_round)
         #joblib.dump(clf, xgbModelPath)    
         return clf
     
+    def getBestXgboostEvalScore(self, inputScoreList):
+        minScore = sys.float_info.max
+        minId =0
+        for i, tmpScore in enumerate(inputScoreList):
+            rndScore = (tmpScore.split("\t")[1]).split(":")[1]
+            if rndScore < minScore:
+                minId = i+1
+                minScore = rndScore
+        return minId, minScore
+    
+            
     def doXgboostRandomSearch(self, X, Y, num_round):
         
         paramList = []
@@ -249,10 +260,12 @@ class ModelFactory(object):
             param['subsample'] = random.uniform(0.45, 0.65)
             param['num_class'] = num_class 
             param['silent'] = 1
-            
+            param['alpha'] = 1
+            param['lambda'] = 1
+            param['early_stopping_rounds']=2
             plst = param.items()
         
-        
+            
             evalDataPercentage = 0.1
             
             sampleRows = np.random.choice(X.index, len(X)*evalDataPercentage) 
@@ -261,9 +274,12 @@ class ModelFactory(object):
             dtest  = xgb.DMatrix( X.ix[sampleRows], label=sampleAnsDf)
             dtrain  =  xgb.DMatrix( X.drop(sampleRows), label=Y.drop(sampleRows))
 
+            evallist  = [(dtest,'eval'), (dtrain,'train')]
+            bst = xgb.train(plst, dtrain, num_round, evallist)
+            new_num_round, minScore = self.getBestXgboostEvalScore(bst.bst_eval_set_score_list)
+            bst = xgb.train(plst, dtrain, new_num_round, evallist)
             
-            bst = xgb.train(plst, dtrain, num_round)
-            tmpScore = calLogLoss(pd.DataFrame(bst.predict(dtest)), sampleAnsDf)
+            tmpScore = minScore
             if  tmpScore < bestScore:
                 bestScore = tmpScore
                 bestClf = bst
