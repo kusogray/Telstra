@@ -225,7 +225,7 @@ class ModelFactory(object):
         minScore = sys.float_info.max
         minId =0
         for i, tmpScore in enumerate(inputScoreList):
-            rndScore = (tmpScore.split("\t")[1]).split(":")[1]
+            rndScore = float((tmpScore.split("\t")[1]).split(":")[1])
             if rndScore < minScore:
                 minId = i+1
                 minScore = rndScore
@@ -278,6 +278,11 @@ class ModelFactory(object):
             bst = xgb.train(plst, dtrain, num_round, evallist)
             new_num_round, minScore = self.getBestXgboostEvalScore(bst.bst_eval_set_score_list)
             bst = xgb.train(plst, dtrain, new_num_round, evallist)
+            
+            tmpSelfScore = calLogLoss(pd.DataFrame(bst.predict(dtest)), sampleAnsDf)
+            print "self best score:" + str(tmpSelfScore)
+            print "xgb best score:" + str(minScore)
+            
             
             tmpScore = minScore
             if  tmpScore < bestScore:
