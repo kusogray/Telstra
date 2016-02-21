@@ -267,7 +267,7 @@ class ModelFactory(object):
             plst = param.items()
         
             
-            evalDataPercentage = 0.15
+            evalDataPercentage = 0.2
             
             sampleRows = np.random.choice(X.index, len(X)*evalDataPercentage) 
             
@@ -285,8 +285,9 @@ class ModelFactory(object):
             if  tmpScore < bestScore:
                 #tmpSelfScore = calLogLoss(pd.DataFrame(bst.predict(dtest)), sampleAnsDf)
                 #print "self best score:" + str(tmpSelfScore)
-                log( "xgb best score:" + str(minScore))
+                log("xgb best score:" + str(minScore))
                 log("xgb best num_round: " + str(new_num_round))
+                log("xgb best param: " + str(plst))
                 newDtrain = xgb.DMatrix(ori_X, label=ori_Y)
                 bst = xgb.train(plst, newDtrain, new_num_round)
                 
