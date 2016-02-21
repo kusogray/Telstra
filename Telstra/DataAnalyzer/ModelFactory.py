@@ -193,15 +193,16 @@ class ModelFactory(object):
         else:
             objective = "multi:softprob"
         
-        num_round = 20
-        param = {'bst:max_depth':18, 
+        num_round = 150
+        param = {'bst:max_depth':74, 
                  'bst:eta':0.05, 
                  'silent':1, 
-                 #'min_child_weight':3, 
-                 'subsample': 0.7,
-                 'colsample_bytree': 0.7,
-                #  'max_delta_step':7,
-                   'gamma' : 2,
+                 'min_child_weight':2, 
+                 'subsample': 0.6031536958709969,
+                 #'colsample_bytree': 0.7,
+                  'max_delta_step':9,
+                   'gamma' : 3,
+                   'eta' : 0.23833373077656667,
                     'eval_metric':'mlogloss',
                      'num_class':num_class ,
                       'objective':objective,
@@ -259,21 +260,22 @@ class ModelFactory(object):
             param['objective'] = objective
             param['subsample'] = random.uniform(0.45, 0.65)
             param['num_class'] = num_class 
-            param['silent'] = 1
+            param['silent'] = True
             param['alpha'] = 1
             param['lambda'] = 1
-            param['early_stopping_rounds']=2
+            #param['early_stopping_rounds']=2
             plst = param.items()
         
             
-            evalDataPercentage = 0.1
+            evalDataPercentage = 0.15
             
             sampleRows = np.random.choice(X.index, len(X)*evalDataPercentage) 
             
             sampleAnsDf = Y.ix[sampleRows]
+            ori_X = X
+            ori_Y = Y
             dtest  = xgb.DMatrix( X.ix[sampleRows], label=sampleAnsDf)
             dtrain  =  xgb.DMatrix( X.drop(sampleRows), label=Y.drop(sampleRows))
-
             evallist  = [(dtest,'eval'), (dtrain,'train')]
             bst = xgb.train(plst, dtrain, num_round, evallist)
             new_num_round, minScore = self.getBestXgboostEvalScore(bst.bst_eval_set_score_list)
@@ -285,7 +287,9 @@ class ModelFactory(object):
                 #print "self best score:" + str(tmpSelfScore)
                 log( "xgb best score:" + str(minScore))
                 log("xgb best num_round: " + str(new_num_round))
-                bst = xgb.train(plst, dtrain, new_num_round, evallist)
+                newDtrain = xgb.DMatrix(ori_X, label=ori_Y)
+                bst = xgb.train(plst, newDtrain, new_num_round)
+                
                 bestScore = tmpScore
                 bestClf = bst
                 paramList = plst
