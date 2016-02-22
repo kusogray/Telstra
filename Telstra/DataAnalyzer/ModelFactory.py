@@ -260,7 +260,7 @@ class ModelFactory(object):
             param['objective'] = objective
             param['subsample'] = random.uniform(0.45, 0.65)
             param['num_class'] = num_class 
-            param['silent'] = True
+            param['silent'] = 1
             param['alpha'] = 1
             param['lambda'] = 1
             #param['early_stopping_rounds']=2
