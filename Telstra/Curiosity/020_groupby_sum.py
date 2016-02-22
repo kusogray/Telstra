@@ -19,7 +19,7 @@ import pandas as pd
 from Telstra.Bartender.Blender import Blender
 from test._mock_backport import inplace
 import random
-
+import xgboost as xgb
 
 if __name__ == '__main__':
     
@@ -57,6 +57,7 @@ if __name__ == '__main__':
     dr = DataReader()
     dr.readInCSV(tmpPath, "test")
     newX = dr._testDataFrame
+    newX  = xgb.DMatrix(newX)
     tmpOutPath = _basePath + expNo +"_" + "Xgboost_" + "groupby_sum"+ "_ans.csv"
     log(clf.predict(newX))
     outDf = pd.DataFrame(clf.predict(newX))
