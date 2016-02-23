@@ -238,6 +238,7 @@ class ModelFactory(object):
         paramList = []
         bestScore = sys.float_info.max
         bestClf = None
+        best_num_round=0 
         
         num_class = len(set(Y))
         objective =""
@@ -298,16 +299,18 @@ class ModelFactory(object):
                 bestScore = tmpScore
                 bestClf = bst
                 paramList = plst
+                best_num_round = new_num_round
                 joblib.dump(bst, Config.xgboostBestTmpCflPath)
+                
         
-        self.genXgboostRpt(bestClf, bestScore, paramList)
+        self.genXgboostRpt(bestClf, bestScore, paramList, best_num_round)
         return bestClf
         
-    def genXgboostRpt(self, bestClf, bestScore, paramList):
+    def genXgboostRpt(self, bestClf, bestScore, paramList, best_num_round):
         dumpModel(bestClf, "Xgboost", self._expInfo, self._subFolderName)
-        log("Native Xgboost best score : ", bestScore, ", param list: ", paramList)
+        log("Native Xgboost best score : ", bestScore, ", param list: ", paramList, "best_num_round: ", best_num_round)
         if self._singleModelMail == True:
-            mail("Xgboost Done" ,"Native Xgboost best score : " + str( bestScore) + ", param list: " + str( paramList))
+            mail("Xgboost Done" ,"Native Xgboost best score : " + str( bestScore) + ", param list: " + str( paramList) + "best_num_round: ", best_num_round)
         
     # # 3.Extra Trees
     def getExtraTressClf(self, X, Y):
