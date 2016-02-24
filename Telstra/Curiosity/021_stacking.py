@@ -82,36 +82,36 @@ if __name__ == '__main__':
     eachClfLoopTimes = 3
     iter_search_times = 1
     
-#     for tmpClfName in clfList:
-#         for i in range(0,eachClfLoopTimes):
-#             fab._subFolderName = tmpClfName
-#             fab._n_iter_search = iter_search_times
-#             fab._expInfo = expInfo
-#             if  tmpClfName == "rf":
-#                 clf = fab.getRandomForestClf(train_fold_1, train_fold_label_1)
-#             elif tmpClfName == "knn":
-#                 clf = fab.getKnnClf(train_fold_1, train_fold_label_1)
-#             elif tmpClfName == "extra_tree":
-#                 clf = fab.getExtraTressClf(train_fold_1, train_fold_label_1)
-#             elif tmpClfName == "xgboost":
-#                 clf = fab.getXgboostClf(train_fold_1, train_fold_label_1)
-#             
-#             if tmpClfName == "xgboost":
-#                 predictResult = clf.predict(xgb.DMatrix(train_fold_2))
-#                 predictTestResult = clf.predict(xgb.DMatrix(test_fold_2))
-#             else:
-#                 predictResult = clf.predict_proba(train_fold_2)
-#                 predictTestResult = clf.predict_proba(test_fold_2)
-#             
-#             
-#             outFold2 = pd.DataFrame(predictResult)
-#             outFold2.columns = [tmpClfName+"_" + str(i) + "_0", tmpClfName+"_" + str(i) + "_1", tmpClfName+"_" + str(i) + "_2" ]
-#             dfUpper = pd.concat([dfUpper, outFold2], axis=1)
-#             
-#             outTestFold2 = pd.DataFrame(predictTestResult)
-#             outTestFold2.columns = [tmpClfName+"_" + str(i) + "_0", tmpClfName+"_" + str(i) + "_1", tmpClfName+"_" + str(i) + "_2"  ]
-#             dfTestUpper = pd.concat([dfTestUpper, outTestFold2], axis=1)
-#         
+    for tmpClfName in clfList:
+        for i in range(0,eachClfLoopTimes):
+            fab._subFolderName = tmpClfName
+            fab._n_iter_search = iter_search_times
+            fab._expInfo = expInfo
+            if  tmpClfName == "rf":
+                clf = fab.getRandomForestClf(train_fold_1, train_fold_label_1)
+            elif tmpClfName == "knn":
+                clf = fab.getKnnClf(train_fold_1, train_fold_label_1)
+            elif tmpClfName == "extra_tree":
+                clf = fab.getExtraTressClf(train_fold_1, train_fold_label_1)
+            elif tmpClfName == "xgboost":
+                clf = fab.getXgboostClf(train_fold_1, train_fold_label_1)
+             
+            if tmpClfName == "xgboost":
+                predictResult = clf.predict(xgb.DMatrix(train_fold_2))
+                predictTestResult = clf.predict(xgb.DMatrix(test_fold_2))
+            else:
+                predictResult = clf.predict_proba(train_fold_2)
+                predictTestResult = clf.predict_proba(test_fold_2)
+             
+             
+            outFold2 = pd.DataFrame(predictResult)
+            outFold2.columns = [tmpClfName+"_" + str(i) + "_0", tmpClfName+"_" + str(i) + "_1", tmpClfName+"_" + str(i) + "_2" ]
+            dfUpper = pd.concat([dfUpper, outFold2], axis=1)
+             
+            outTestFold2 = pd.DataFrame(predictTestResult)
+            outTestFold2.columns = [tmpClfName+"_" + str(i) + "_0", tmpClfName+"_" + str(i) + "_1", tmpClfName+"_" + str(i) + "_2"  ]
+            dfTestUpper = pd.concat([dfTestUpper, outTestFold2], axis=1)
+         
         
     dfLower = pd.DataFrame()
     dfTestLower = pd.DataFrame()
